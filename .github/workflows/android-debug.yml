@@ -1,0 +1,80 @@
+name: Android debug build (no game SWF)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source and pinned FrostFrontend
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Use JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK tools
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 platform
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+
+      - name: Retrieve official Ruffle 0.7.1 runtime
+        run: |
+          mkdir -p /tmp/ruffle-package app/src/main/assets/www/ruffle
+          curl --fail --silent --show-error --location \
+            https://registry.npmjs.org/@ruffle-rs/ruffle/-/ruffle-0.7.1.tgz \
+            -o /tmp/ruffle-0.7.1.tgz
+          tar -xzf /tmp/ruffle-0.7.1.tgz -C /tmp/ruffle-package
+          rufflejs="$(find /tmp/ruffle-package -type f -name ruffle.js -print -quit)"
+          test -n "$rufflejs"
+          cp -R "$(dirname "$rufflejs")"/. app/src/main/assets/www/ruffle/
+
+      - name: Verify game SWF is not committed
+        run: |
+          if find app/src/main/assets/www -type f -iname '*.swf' | grep -q .; then
+            echo 'Unexpected original Flash game in assets.'
+            exit 1
+          fi
+
+      - name: Compile debug Android APK
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Verify APK contains no copyrighted game SWF
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          apk = Path('app/build/outputs/apk/debug/app-debug.apk')
+          assert apk.is_file(), 'Debug APK was not generated'
+          with ZipFile(apk) as z:
+              names = set(z.namelist())
+              assert not any(p.lower().endswith('.swf') for p in names), 'Game SWF bundled'
+              assert 'assets/www/ruffle/ruffle.js' in names, 'Ruffle missing'
+              assert 'assets/www/index.html' in names, 'Game wrapper missing'
+          print('PASS: game-free debug APK contains Ruffle and Skull Kid wrapper')
+          PY
+
+      - name: Retain development APK for device testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skull-Kid-Android-debug-unsigned-for-testing
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
