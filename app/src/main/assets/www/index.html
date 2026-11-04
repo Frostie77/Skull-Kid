@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Skull Kid</title>
+<style>
+html,body { margin:0; width:100%; height:100%; overflow:hidden; background:#000; color:#fff; font-family:sans-serif; }
+#stage { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+#game { width:min(100vw, calc(100vh * 11 / 8)); height:min(100vh, calc(100vw * 8 / 11)); transform-origin:center center; }
+ruffle-player { width:100%; height:100%; }
+#status { position:absolute; left:20px; bottom:20px; color:#ddd; font-size:14px; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="game"></div></div>
+<div id="status">Starting Skull Kid…</div>
+<script>
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = {
+  autoplay: 'on', unmuteOverlay: 'visible', letterbox: 'on', contextMenu: 'off',
+  allowScriptAccess: true, allowNetworking: 'all', publicPath: 'ruffle/'
+};
+let player;
+let skullMenuPaused = false, skullBackgroundPaused = false, skullRufflePaused = false;
+let skullDisplayMode = 'original';
+function syncRufflePause() {
+  const paused = skullMenuPaused || skullBackgroundPaused;
+  if (!player || skullRufflePaused === paused) return;
+  try {
+    if (paused) player.ruffle().suspend();
+    else player.ruffle().resume();
+  } catch (error) {
+    try {
+      if (paused && typeof player.pause === 'function') player.pause();
+      else if (!paused && typeof player.play === 'function') player.play();
+    } catch (fallbackError) {
+      console.warn('SkullKid pause failed', fallbackError);
+      return;
+    }
+  }
+  skullRufflePaused = paused;
+  if (!paused && player) player.focus();
+}
+window.skullSetMenuPaused = value => {
+  skullMenuPaused = !!value;
+  if (skullMenuPaused) window.skullClearKeys();
+  syncRufflePause();
+};
+window.skullSetBackgroundPaused = value => {
+  skullBackgroundPaused = !!value;
+  if (skullBackgroundPaused) window.skullClearKeys();
+  syncRufflePause();
+};
+window.skullSetDisplayMode = mode => {
+  skullDisplayMode = mode === 'stretch' ? 'stretch' : 'original';
+  const game = document.getElementById('game');
+  if (!game) return;
+  game.style.transform = '';
+  if (skullDisplayMode === 'stretch') {
+    const box = game.getBoundingClientRect();
+    if (box.width && box.height) {
+      game.style.transform = 'scale(' + (innerWidth / box.width) + ',' + (innerHeight / box.height) + ')';
+    }
+  }
+};
+window.addEventListener('resize', () => window.skullSetDisplayMode(skullDisplayMode));
+document.addEventListener('visibilitychange', () => window.skullSetBackgroundPaused(document.hidden));
+const keys = {
+  up:{key:'ArrowUp',code:'ArrowUp',keyCode:38},
+  down:{key:'ArrowDown',code:'ArrowDown',keyCode:40},
+  left:{key:'ArrowLeft',code:'ArrowLeft',keyCode:37},
+  right:{key:'ArrowRight',code:'ArrowRight',keyCode:39},
+  attack:{key:' ',code:'Space',keyCode:32}
+};
+const sources = Object.create(null);
+window.skullKey = (id, pressed, source) => {
+  if (pressed && (skullMenuPaused || skullBackgroundPaused)) return;
+  const spec = keys[id];
+  if (!spec || !player) return;
+  if (!sources[id]) sources[id] = new Set();
+  const wasDown = sources[id].size > 0;
+  if (pressed) sources[id].add(source); else sources[id].delete(source);
+  const nowDown = sources[id].size > 0;
+  if (wasDown === nowDown) return;
+  player.focus();
+  player.dispatchEvent(new KeyboardEvent(nowDown ? 'keydown' : 'keyup', {
+    key:spec.key, code:spec.code, keyCode:spec.keyCode, which:spec.keyCode,
+    bubbles:true, composed:true, cancelable:true
+  }));
+};
+window.skullClearKeys = () => {
+  for (const [id, holders] of Object.entries(sources)) {
+    if (!holders.size || !player) continue;
+    const spec = keys[id];
+    holders.clear();
+    player.dispatchEvent(new KeyboardEvent('keyup', {
+      key: spec.key, code: spec.code, keyCode: spec.keyCode, which: spec.keyCode,
+      bubbles: true, composed: true, cancelable: true
+    }));
+  }
+};
+window.addEventListener('load', async () => {
+  const status = document.getElementById('status');
+  try {
+    const ruffle = window.RufflePlayer.newest();
+    if (!ruffle) throw new Error('Ruffle runtime missing');
+    player = ruffle.createPlayer();
+    document.getElementById('game').appendChild(player);
+    await player.ruffle().load({url:'/game/skull-kid.swf', allowNetworking:'all', allowScriptAccess:true});
+    status.remove();
+    window.skullSetDisplayMode(skullDisplayMode);
+    syncRufflePause();
+    player.focus();
+  } catch (e) {
+    status.textContent = 'Game load failed: ' + String(e);
+    console.error('SkullKid load failed', e);
+  }
+});
+</script>
+<script src="ruffle/ruffle.js"></script>
+</body>
+</html>

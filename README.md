@@ -1,20 +1,43 @@
 # Skull Kid — Android
 
-Unofficial Android compatibility port for **The Skullkid** (2002), by **korded / Chance Banning**. Runs the original Flash game with [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) library.
+Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status:** early source setup; Android device testing and a signed public release have **not** been completed.
+**Status: initial debug source prepared; not yet built or tested on Android. There is no signed public release.**
 
-The original game SWF is **not included** in this repository or any distributable APK. Players will import their own copy when first launching the app.
+The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
 
-- **Original game:** [The Skullkid on Newgrounds](https://www.newgrounds.com/portal/view/63747)
-- **Controls:** arrow keys for movement; Space to use the chainsaw / fire. These will map to the Odin's left stick/D-pad and an action button.
-- **Original SWF stage:** 550 × 400 at 18 fps (checked against the supplied Flash 6 file).
-- **Target:** Android 8.0+, with initial testing on AYN Odin 2 Portal.
+## Build and test on Windows
 
-The source project and development instructions will be added during setup. No private game assets, APK signing keys, or signing passwords belong in Git.
+1. Clone the repository with submodules: `git clone --recurse-submodules https://github.com/Frostie77/Skull-Kid.git`.
+2. Open **PowerShell** in the checked-out directory.
+3. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\build-test.ps1`. Requires Android SDK and JDK 17; downloads the Ruffle runtime and Gradle if needed.
+4. Launch the installed debug app on your Odin and tap **Select SWF File** to import the original game.
+5. Verify gameplay and the five FrostFrontend tabs before planning a signed release.
+
+Do not put the original SWF in the repository or under `app/src/main/assets/www`. The app stores an imported copy privately, and the build script refuses to package a game SWF.
+
+## Game compatibility and controls
+
+The supplied `Skull_Kid.swf` is a **Flash 6** movie with a **550 × 400** stage and **18 fps**.
+
+- Left stick / D-pad: **arrow keys** to move, and duck/stand during the gunfight
+- **A**: **Space** to chainsaw/shoot
+- **Start**: FrostFrontend menu
+- Touchscreen: joystick/D-pad and a single **USE** action
+
+FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Display supports original 550×400 proportions or stretch; controls include button remapping and movement settings, plus touch layout adjustment and stereo speaker testing.
+
+The stable update-feed file is deliberately empty until a signed APK has been properly released. Debug builds do not offer verified public updates.
+
+## Launcher icon
+
+Custom Skull Kid artwork is still pending. No unrelated or temporary shield icon was copied into the project.
 
 ## Credits
 
-Original game and artwork: **korded (Chance Banning)**. Android wrapper: **Frostie77**. Flash runtime: **[Ruffle](https://ruffle.rs)**. Settings UI: **[FrostFrontend](https://github.com/Frostie77/FrostFrontend)**.
+- **Original game (2002):** [korded (Chance Banning)](https://korded.newgrounds.com/) — [Newgrounds original](https://www.newgrounds.com/portal/view/63747)
+- **Android wrapper:** Frostie77
+- **Flash compatibility:** [Ruffle](https://ruffle.rs)
+- **Settings library:** [FrostFrontend](https://github.com/Frostie77/FrostFrontend)
 
-This project is an unofficial, unaffiliated fan-made compatibility layer. All original game rights remain with their respective owners.
+Original game rights belong to their respective owners. This unofficial, unaffiliated project does not redistribute the original Flash file.
