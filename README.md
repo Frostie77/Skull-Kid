@@ -2,7 +2,7 @@
 
 Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status: Debug APK builds and installs on AYN Odin 2 Portal. Held-key input now repeats like the original keyboard controls. The boss death animation and victory screen pass a local Ruffle 0.7.1 test; Odin verification remains pending. No signed public release.**
+**Status: Debug APK builds and installs on AYN Odin 2 Portal. Held-key input now repeats like the original keyboard controls. The full boss death animation and victory screen are verified locally with Ruffle 0.7.1 and on the Odin. No signed public release.**
 
 The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
 
@@ -31,7 +31,9 @@ The stable update-feed file is deliberately empty until a signed APK has been pr
 
 ## Boss ending verification
 
-Held controller and touch keys now generate keyboard repeat events, as required by the original Flash keyDown handlers. A local Ruffle 0.7.1 comparison reproduces the stalled first injury with the old input bridge and reaches the full death animation and victory screen with the new bridge. Odin verification remains pending.
+The full boss death animation and victory screen have passed local Ruffle 0.7.1 testing and on-device testing on AYN Odin 2 Portal. Held controller and touch keys generate keyboard repeat events to match the original Flash keyDown controls.
+
+At the boss, release **USE** after the first cut, approach again, then hold **USE** through the second cut.
 
 ## Launcher icon
 
