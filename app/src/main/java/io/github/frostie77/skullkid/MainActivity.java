@@ -69,8 +69,7 @@ public final class MainActivity extends Activity {
     private String updateLatestText = "Not checked";
     private String updateReleaseUrl;
     private static final FrostControlProfile CONTROL_PROFILE = FrostControlProfile.of("skull-kid",
-        new FrostButtonMapper.Action("attack", "Use Weapon", KeyEvent.KEYCODE_BUTTON_A),
-        new FrostButtonMapper.Action("quality", "Cycle Quality", KeyEvent.KEYCODE_BUTTON_Y)
+        new FrostButtonMapper.Action("attack", "Use Weapon", KeyEvent.KEYCODE_BUTTON_A)
     );
 
     @Override public void onCreate(Bundle state) {
@@ -181,19 +180,9 @@ public final class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .addPathHandler("/game/", path -> {
                 if (!SWF_NAME.equals(path.startsWith("/") ? path.substring(1) : path)) return null;
-                try {
-                    // The original imported SWF is never modified or redistributed.
-                    // Add the native Y/Flash quality listener only to in-memory bytes.
-                    byte[] original = java.nio.file.Files.readAllBytes(gameFile().toPath());
-                    byte[] playable = SkullKidQualityPatch.inject(original);
-                    return new WebResourceResponse("application/x-shockwave-flash", null,
-                        new java.io.ByteArrayInputStream(playable));
-                } catch (IOException e) {
-                    Log.w("SkullKidRuffle", "Quality input hook unavailable; loading original SWF", e);
-                    try { return new WebResourceResponse("application/x-shockwave-flash", null,
-                        new FileInputStream(gameFile())); }
-                    catch (IOException missing) { return null; }
-                }
+                try { return new WebResourceResponse("application/x-shockwave-flash", null,
+                    new FileInputStream(gameFile())); }
+                catch (IOException e) { return null; }
             }).build();
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
@@ -242,7 +231,6 @@ public final class MainActivity extends Activity {
             case KeyEvent.KEYCODE_DPAD_RIGHT: return "right";
             default:
                 if (code == mapper.buttonFor("attack")) return "attack";
-                if (code == mapper.buttonFor("quality")) return "quality";
                 return null;
         }
     }
@@ -337,7 +325,7 @@ public final class MainActivity extends Activity {
                                     binding == FrostButtonMapper.UNMAPPED));
                             }
                             rows.add(item("map_reset", "Restore Default Controls", "",
-                                "Use Weapon A; Cycle Quality Y"));
+                                "Use Weapon: A"));
                             return rows;
                         }
                         if (showingMovementSettings) {
@@ -359,7 +347,7 @@ public final class MainActivity extends Activity {
                         }
                         return Arrays.asList(
                             item("button_mapping", "Button Mapping", "",
-                                "Remap Use Weapon and Cycle Quality"),
+                                "Remap the chainsaw / shoot action"),
                             item("movement_settings", "Movement Settings", "",
                                 "Configure left-stick movement and deadzone")
                         );
@@ -635,8 +623,6 @@ public final class MainActivity extends Activity {
             } else {
                 if (!pressedGamepadButtons.remove(code)) return true;
             }
-            // Y sends a real Flash KeyY to the in-memory quality listener.
-            // The SWF updates its own _quality property without restarting.
             jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
             return true;
         }

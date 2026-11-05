@@ -2,7 +2,7 @@
 
 Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status: initial Debug APK built and installed successfully on AYN Odin 2 Portal. Gameplay and virtual controls work; quality cycling and final boss ending still require device verification. No signed public release.**
+**Status: initial Debug APK built and installed successfully on AYN Odin 2 Portal. Gameplay and virtual controls work; the final boss ending remains unresolved and needs an unmodified-SWF device test. No signed public release.**
 
 The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
 
@@ -22,11 +22,10 @@ The supplied `Skull_Kid.swf` is a **Flash 6** movie with a **550 × 400** stage 
 
 - Left stick / D-pad: **arrow keys** to move, and duck/stand during the gunfight
 - **A**: **Space** to chainsaw/shoot
-- **Y**: cycle **Low → Medium → High** through the game's own Flash `_quality` setting, without restarting
 - **Start**: FrostFrontend menu
 - Touchscreen: joystick/D-pad and a single **USE** action
 
-FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch; Controls supports remapping the USE and quality-cycle buttons. Y changes the Flash movie's own `_quality` property live, rather than reloading the movie. A small AVM1 input listener is inserted **in memory while serving the user's imported SWF**; the SWF saved in app-private storage is never modified or published. Movement settings, touch layout and stereo speaker testing remain available.
+FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch; Controls supports remapping the USE action. Rendering quality uses Ruffle's default High setting; there is no quality shortcut. Movement settings, touch layout and stereo speaker testing remain available. The original SWF is always served unchanged from app-private storage.
 
 The stable update-feed file is deliberately empty until a signed APK has been properly released. Debug builds do not offer verified public updates.
 
