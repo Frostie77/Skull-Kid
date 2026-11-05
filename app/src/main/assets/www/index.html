@@ -107,17 +107,17 @@ window.addEventListener('load', async () => {
     const ruffle = window.RufflePlayer.newest();
     if (!ruffle) throw new Error('Ruffle runtime missing');
     player = ruffle.createPlayer();
-    // Diagnostic traces only appear in Debug APKs that inject SKULLDBG actions.
-    // Ruffle's public traceObserver makes Flash AVM1 trace() visible to Android logcat.
-    player.traceObserver = message => {
-      if (typeof message === 'string' && message.startsWith('SKULLDBG_'))
-        console.info(message);
-    };
     document.getElementById('game').appendChild(player);
     await player.ruffle().load({
       url:'/game/skull-kid.swf', allowNetworking:'all',
       allowScriptAccess:true, quality:'high'
     });
+    // Ruffle 0.7.1 creates its runtime during load(); earlier observer assignments
+    // are discarded. Attach here before Flash starts executing its first frame.
+    player.ruffle().traceObserver = message => {
+      if (typeof message === 'string' && message.startsWith('SKULLDBG_'))
+        console.info(message);
+    };
     status.remove();
     window.skullSetDisplayMode(skullDisplayMode);
     syncRufflePause();
