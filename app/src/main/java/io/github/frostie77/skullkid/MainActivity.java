@@ -61,10 +61,9 @@ public final class MainActivity extends Activity {
     private FrostButtonMapper mapper;
     private final FrostSpeakerTest speakerTest = new FrostSpeakerTest();
     private Button menuButton;
-    private Button touchVisibilityButton;
     private SkullKidTouchControls touchControls;
-    // Temporary menu access: hide virtual controls without changing saved preferences.
-    private boolean touchOverlayHidden;
+    private static final String[] QUALITY_LABELS = {"Low", "Medium", "High"};
+    private static final String[] QUALITY_VALUES = {"low", "medium", "high"};
     private boolean showingButtonMap;
     private boolean showingMovementSettings;
     private boolean updateChecking, updateCheckedThisLaunch, updateNoticeShown;
@@ -72,7 +71,8 @@ public final class MainActivity extends Activity {
     private String updateLatestText = "Not checked";
     private String updateReleaseUrl;
     private static final FrostControlProfile CONTROL_PROFILE = FrostControlProfile.of("skull-kid",
-        new FrostButtonMapper.Action("attack", "Use Weapon", KeyEvent.KEYCODE_BUTTON_A)
+        new FrostButtonMapper.Action("attack", "Use Weapon", KeyEvent.KEYCODE_BUTTON_A),
+        new FrostButtonMapper.Action("quality", "Cycle Quality", KeyEvent.KEYCODE_BUTTON_Y)
     );
 
     @Override public void onCreate(Bundle state) {
@@ -211,8 +211,28 @@ public final class MainActivity extends Activity {
         });
         root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
         addFrontend();
-        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
+        loadGamePage();
         webView.requestFocus();
+    }
+
+    /** Quality is set when Ruffle loads the SWF. Changing it restarts the movie.
+     * The imported game and all user preferences remain untouched. */
+    private void loadGamePage() {
+        if (webView == null) return;
+        int i = Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)));
+        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html?quality=" +
+            QUALITY_VALUES[i]);
+    }
+
+    private void cycleQuality(int direction) {
+        int current = Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)));
+        int next = (current + direction + 3) % 3;
+        preferences.edit().putInt("quality_mode", next).apply();
+        releaseGameInputs();
+        loadGamePage();
+        android.widget.Toast.makeText(this,
+            "Quality: " + QUALITY_LABELS[next] + " (game restarted)",
+            android.widget.Toast.LENGTH_SHORT).show();
     }
 
     private void jsKey(String key, boolean down, String source) {
@@ -230,6 +250,7 @@ public final class MainActivity extends Activity {
             case KeyEvent.KEYCODE_DPAD_RIGHT: return "right";
             default:
                 if (code == mapper.buttonFor("attack")) return "attack";
+                if (code == mapper.buttonFor("quality")) return "quality";
                 return null;
         }
     }
@@ -281,25 +302,6 @@ public final class MainActivity extends Activity {
         params.rightMargin = dp(12);
         root.addView(menuButton, params);
 
-        // Skull Kid's Flash menu options can sit underneath the virtual D-pad.
-        // Offer a one-tap override without requiring a trip through FrostFrontend.
-        touchVisibilityButton = new Button(this);
-        touchVisibilityButton.setAllCaps(false);
-        touchVisibilityButton.setTextSize(12);
-        touchVisibilityButton.setTextColor(Color.WHITE);
-        touchVisibilityButton.setPadding(0, 0, 0, 0);
-        touchVisibilityButton.setBackgroundTintList(
-            android.content.res.ColorStateList.valueOf(0xAA28212B));
-        FrameLayout.LayoutParams touchToggleParams = new FrameLayout.LayoutParams(
-            dp(82), dp(40), Gravity.TOP | Gravity.LEFT);
-        touchToggleParams.topMargin = dp(10);
-        touchToggleParams.leftMargin = dp(12);
-        root.addView(touchVisibilityButton, touchToggleParams);
-        touchVisibilityButton.setOnClickListener(v -> {
-            touchOverlayHidden = !touchOverlayHidden;
-            updateTouchControls();
-        });
-
         frontend = new FrostFrontendView(this);
         frontend.setVisibility(View.GONE);
         root.addView(frontend, new FrameLayout.LayoutParams(-1, -1));
@@ -323,10 +325,15 @@ public final class MainActivity extends Activity {
             @Override public List<FrostFrontendView.Item> itemsForTab(String tabId) {
                 switch (tabId) {
                     case "graphics":
-                        return Collections.singletonList(item("display", "Display Mode",
-                            "stretch".equals(preferences.getString("display_mode", "original"))
-                                ? "Stretch to Screen" : "Original (550×400)",
-                            "Original keeps correct proportions; Stretch fills the display"));
+                        return Arrays.asList(
+                            item("display", "Display Mode",
+                                "stretch".equals(preferences.getString("display_mode", "original"))
+                                    ? "Stretch to Screen" : "Original (550×400)",
+                                "Original keeps correct proportions; Stretch fills the display"),
+                            item("quality", "Rendering Quality",
+                                QUALITY_LABELS[Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)))],
+                                "Low / Medium / High; cycle with Y. Changes restart Flash")
+                        );
                     case "sound":
                         return Collections.singletonList(item("speaker_test",
                             "Speaker Test: Left → Right → Both", "",
@@ -343,7 +350,7 @@ public final class MainActivity extends Activity {
                                     binding == FrostButtonMapper.UNMAPPED));
                             }
                             rows.add(item("map_reset", "Restore Default Controls", "",
-                                "Use Weapon: A"));
+                                "Use Weapon A; Cycle Quality Y"));
                             return rows;
                         }
                         if (showingMovementSettings) {
@@ -365,7 +372,7 @@ public final class MainActivity extends Activity {
                         }
                         return Arrays.asList(
                             item("button_mapping", "Button Mapping", "",
-                                "Remap the chainsaw / shoot action"),
+                                "Remap Use Weapon and Cycle Quality"),
                             item("movement_settings", "Movement Settings", "",
                                 "Configure left-stick movement and deadzone")
                         );
@@ -414,7 +421,8 @@ public final class MainActivity extends Activity {
             }
 
             @Override public void onItemAdjusted(String tabId, String itemId, int direction) {
-                if (itemId.equals("display") || itemId.equals("automatic") ||
+                if (itemId.equals("display") || itemId.equals("quality") ||
+                    itemId.equals("automatic") ||
                     itemId.equals("directions") ||
                     itemId.equals("deadzone") || itemId.startsWith("invert_") ||
                     itemId.startsWith("touch_") && !itemId.equals("touch_reset"))
@@ -446,6 +454,10 @@ public final class MainActivity extends Activity {
             if (speakerTest.start())
                 android.widget.Toast.makeText(this, "LEFT, then RIGHT, then BOTH",
                     android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+        if ("quality".equals(id)) {
+            cycleQuality(direction);
             return;
         }
         if ("display".equals(id)) {
@@ -613,17 +625,10 @@ public final class MainActivity extends Activity {
     private void updateTouchControls() {
         if (touchControls == null) return;
         int mode = preferences.getInt("touch_mode", 0);
-        boolean available = webView != null && (frontend == null || !frontend.isOpen()) &&
+        boolean show = webView != null && (frontend == null || !frontend.isOpen()) &&
             (mode == 1 || mode == 0 && lastInputWasTouch);
-        boolean show = available && !touchOverlayHidden;
         if (!show) touchControls.releaseAll();
         touchControls.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (touchVisibilityButton != null) {
-            touchVisibilityButton.setVisibility(available ? View.VISIBLE : View.GONE);
-            touchVisibilityButton.setText(touchOverlayHidden ? "Show Pad" : "Hide Pad");
-            touchVisibilityButton.setContentDescription(touchOverlayHidden
-                ? "Show on-screen controls" : "Hide on-screen controls");
-        }
         touchControls.configure(preferences.getInt("touch_size", 1),
             preferences.getInt("touch_opacity", 1),
             preferences.getInt("touch_pad", 0),
@@ -648,7 +653,11 @@ public final class MainActivity extends Activity {
             } else {
                 if (!pressedGamepadButtons.remove(code)) return true;
             }
-            jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
+            if ("quality".equals(key)) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) cycleQuality(1);
+            } else {
+                jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
+            }
             return true;
         }
         return super.dispatchKeyEvent(event);
