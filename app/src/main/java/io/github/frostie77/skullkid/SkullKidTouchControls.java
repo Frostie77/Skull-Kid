@@ -248,7 +248,11 @@ public final class SkullKidTouchControls extends View {
                 set(4, true);
                 return true;
             }
-            return true;
+            // A primary tap outside the on-screen controls must reach the WebView.
+            // Otherwise the Flash title-screen Play button cannot be selected
+            // while virtual controls are visible. Keep secondary touches in a
+            // control-owned stream here so held movement/action stays intact.
+            return action != MotionEvent.ACTION_DOWN;
         }
         if (action == MotionEvent.ACTION_MOVE) {
             if (movePointer != -1) {
