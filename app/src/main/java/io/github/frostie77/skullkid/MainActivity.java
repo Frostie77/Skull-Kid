@@ -185,6 +185,13 @@ public final class MainActivity extends Activity {
                     byte[] playable = SkullKidBossEndingPatch.patch(original);
                     if (playable != original)
                         Log.i("SkullKidRuffle", "Boss-ending handoff patch applied in memory.");
+                    if ((getApplicationInfo().flags &
+                            android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+                        byte[] instrumented = SkullKidBossDiagnostics.inject(playable);
+                        if (instrumented != playable)
+                            Log.i("SkullKidRuffle", "Boss timeline trace markers enabled.");
+                        playable = instrumented;
+                    }
                     return new WebResourceResponse("application/x-shockwave-flash", null,
                         new java.io.ByteArrayInputStream(playable));
                 } catch (IOException e) {
