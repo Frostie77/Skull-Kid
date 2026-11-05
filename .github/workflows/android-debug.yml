@@ -1,4 +1,4 @@
-name: Android debug build (no game SWF)
+name: Android builds and update verification
 
 on:
   push:
@@ -23,6 +23,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Test the production update verifier
+        run: python3 tests/test_updates.py
 
       - name: Use runner preinstalled Android SDK
         run: |
@@ -58,22 +61,24 @@ jobs:
             exit 1
           fi
 
-      - name: Compile debug Android APK
-        run: gradle --no-daemon :app:assembleDebug
+      - name: Compile Debug and Release Android APKs
+        run: gradle --no-daemon :app:assembleDebug :app:assembleRelease
 
       - name: Verify APK contains no copyrighted game SWF
         run: |
           python3 - <<'PY'
           from pathlib import Path
           from zipfile import ZipFile
-          apk = Path('app/build/outputs/apk/debug/app-debug.apk')
-          assert apk.is_file(), 'Debug APK was not generated'
-          with ZipFile(apk) as z:
-              names = set(z.namelist())
-              assert not any(p.lower().endswith('.swf') for p in names), 'Game SWF bundled'
-              assert 'assets/www/ruffle/ruffle.js' in names, 'Ruffle missing'
-              assert 'assets/www/index.html' in names, 'Game wrapper missing'
-          print('PASS: game-free debug APK contains Ruffle and Skull Kid wrapper')
+          for variant, filename in (("debug", "app-debug.apk"), ("release", "app-release-unsigned.apk")):
+              apk = Path('app/build/outputs/apk') / variant / filename
+              assert apk.is_file(), f'{variant} APK was not generated'
+              with ZipFile(apk) as z:
+                  names = set(z.namelist())
+                  assert not any(p.lower().endswith('.swf') for p in names), 'Game SWF bundled'
+                  assert 'assets/www/ruffle/ruffle.js' in names, 'Ruffle missing'
+                  assert 'assets/www/index.html' in names, 'Game wrapper missing'
+                  assert any(p.startswith('res/') and 'ic_launcher' in p for p in names), 'Approved launcher icon missing'
+              print(f'PASS: {variant} APK contains Ruffle and the approved launcher icon without game SWF')
           PY
 
       - name: Retain development APK for device testing
@@ -83,3 +88,22 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
+
+  windows-release-script:
+    runs-on: windows-latest
+    steps:
+      - name: Check out release helper
+        uses: actions/checkout@v4
+      - name: Parse release helper with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $parseErrors = $null
+          $tokens = $null
+          $file = Join-Path $env:GITHUB_WORKSPACE 'build-public-release.ps1'
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            $file, [ref]$tokens, [ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+          Write-Host 'PASS: release helper parses in Windows PowerShell 5.1.'

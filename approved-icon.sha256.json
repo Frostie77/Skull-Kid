@@ -1,0 +1,10 @@
+{
+  "app/src/main/res/drawable/ic_launcher_background.xml": "66010fbe9f225c41fce2217c06c930fd59d00fd974b9a2a2043bbda1502cc1bc",
+  "app/src/main/res/drawable-nodpi/ic_launcher_foreground.png": "4016a877ad084b50e5fd91815d96a041fd74a369e98eb58ac90d2abc7916ccbc",
+  "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml": "ac2c608e7f2f839101c19e74f6e7a4e28c8ca0bdd8e560873be9f02f798213d3",
+  "app/src/main/res/mipmap-hdpi/ic_launcher.png": "00899ac24d3fcb6ae980a37d08e356124ffe430b38ad699d583dae339fcb5499",
+  "app/src/main/res/mipmap-mdpi/ic_launcher.png": "f4fbc2601c12d8efd735c1f4d1c39b3a48ce905e603a0a341c20228b452ec590",
+  "app/src/main/res/mipmap-xhdpi/ic_launcher.png": "786e60cdf76ada8aa389c2bbb91ef28ff02657f731008c8bdf97df53e3118066",
+  "app/src/main/res/mipmap-xxhdpi/ic_launcher.png": "a6fca2599f5ca2e40fca43fe4dc5fdb2debbab05f29d249f3e53d09e20ed8571",
+  "app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": "e865100afea71eadc42f27b0fa53de894473be84c6d86fc8477bbadb737831aa"
+}

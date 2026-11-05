@@ -2,9 +2,23 @@
 
 Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status: Debug APK builds and installs on AYN Odin 2 Portal. Held-key input now repeats like the original keyboard controls. The full boss death animation and victory screen are verified locally with Ruffle 0.7.1 and on the Odin. No signed public release.**
+**Status: Full gameplay and the boss ending are verified on AYN Odin 2 Portal. The v1.0.0 signed public release is being prepared.**
 
 The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
+
+## Installation and original game download
+
+1. Download the signed Android APK from [Releases](https://github.com/Frostie77/Skull-Kid/releases).
+2. Download the [original Skull Kid SWF](https://uploads.ungrounded.net/63000/63747_skullkid.swf), or use your own copy.
+3. Save the SWF in your device's Downloads folder.
+4. Open Skull Kid, choose **Select SWF File**, and import it. The app remembers the file for later launches.
+
+If the SWF opens in your browser, use **Save link as**.
+
+- [Direct SWF download](https://uploads.ungrounded.net/63000/63747_skullkid.swf)
+- [Original Newgrounds page and creator credits](https://www.newgrounds.com/portal/view/63747)
+
+Requires **Android 8.0 or newer**. The game file is supplied separately and is not bundled in the APK.
 
 ## Build and test on Windows
 
@@ -13,6 +27,14 @@ The original Flash game **is not included** in the source or APK. Supply your ow
 3. Run `powershell -NoProfile -ExecutionPolicy Bypass -File .\build-test.ps1`. Requires Android SDK and JDK 17; downloads the Ruffle runtime and Gradle if needed.
 4. Launch the installed debug app on your Odin and tap **Select SWF File** to import the original game.
 5. Verify gameplay and the five FrostFrontend tabs before planning a signed release.
+
+To prepare a signed public APK after the build tools are ready:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build-public-release.ps1
+```
+
+The helper keeps the permanent release keystore outside the repository, makes a backup, verifies the approved icon and APK signature, and stages the APK, checksum, release notes and exact update feed under `release`. It does not install or publish the app. Publish the staged feed after the matching APK is live on GitHub.
 
 Do not put the original SWF in the repository or under `app/src/main/assets/www`. The app stores an imported copy privately, and the build script refuses to package a game SWF.
 
@@ -37,7 +59,7 @@ At the boss, release **USE** after the first cut, approach again, then hold **US
 
 ## Launcher icon
 
-Custom Skull Kid artwork is still pending. No unrelated or temporary shield icon was copied into the project.
+The approved Skull Kid launcher artwork is included in source and verified by `approved-icon.sha256.json` before public builds.
 
 ## Credits
 
