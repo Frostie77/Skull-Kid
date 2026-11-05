@@ -191,6 +191,12 @@ public final class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 applyDisplayMode();
+                // A quality change made inside FrostFrontend reloads the page;
+                // keep the new Flash movie paused while settings are still open.
+                if (frontend != null && frontend.isOpen()) {
+                    view.evaluateJavascript(
+                        "window.skullSetMenuPaused && window.skullSetMenuPaused(true)", null);
+                }
             }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri u = request.getUrl();
