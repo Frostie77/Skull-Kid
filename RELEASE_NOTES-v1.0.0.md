@@ -1,53 +1,29 @@
-# Skull Kid — Android v1.0.0
+**Skull Kid v1.0.0** brings the classic 2002 Flash game to Android with gamepad and touchscreen controls, powered by Ruffle and FrostFrontend.
 
-The first public Android release of **the skullkid**, the 2002 Flash game by **korded (Chance Banning)**, powered by Ruffle and FrostFrontend.
+Tested on **AYN Odin 2 Portal**. Requires **Android 8.0 or newer**.
 
-Developed and tested on the **AYN Odin 2 Portal**, including the full final boss animation and victory screen.
+### Features
 
-## Features
-
-- Gamepad support with remappable USE action and movement settings.
-- Touchscreen joystick or D-pad and on-screen USE control.
-- Original 550 × 400 proportions or stretch to fit the display.
-- FrostFrontend settings: **Graphics, Sound, Controls, Touch Settings and Updates**.
-- Stereo speaker test and persistent settings.
-- Manual update checks and automatic update notifications, linking to verified GitHub releases.
+- Gamepad support with remappable controls.
+- Touchscreen joystick or D-pad and adjustable touch layouts.
+- Original display proportions or stretch to fill the screen.
+- FrostFrontend settings, stereo speaker test and update checks.
 - Custom Skull Kid launcher icon.
 - Offline gameplay after importing the game file.
 
-## Installation
+### Installation
 
-1. Download and install **Skull-Kid-v1.0.0-Android.apk** from the assets below.
-2. Download the [original Skull Kid SWF](https://uploads.ungrounded.net/63000/63747_skullkid.swf), or use your own copy.
-3. Save the SWF in your device's Downloads folder.
-4. Launch Skull Kid, choose **Select SWF File**, and import it. The app remembers the file for future launches.
+1. Install **Skull-Kid-v1.0.0-Android.apk** from the assets below.
+2. Download the [original Skull Kid SWF](https://uploads.ungrounded.net/63000/63747_skullkid.swf).
+3. Launch the app, choose **Select SWF File**, and import it.
 
-If your browser opens the SWF instead of downloading it, use **Save link as**.
+The original Flash game is downloaded separately and is not included in the APK. Your imported file is remembered for future launches.
 
-- [Direct SWF download](https://uploads.ungrounded.net/63000/63747_skullkid.swf)
-- [Original Newgrounds game page](https://www.newgrounds.com/portal/view/63747)
+### Credits
 
-The original Flash game is supplied separately and is not included in the APK.
-
-## Controls
-
-- **Left stick / D-pad:** move; duck and stand during the gunfight.
-- **A / USE:** chainsaw or shoot.
-- **Start / menu icon:** open FrostFrontend.
-
-At the final boss, release USE after the first cut, approach again, then hold USE through the second cut.
-
-## Requirements and updates
-
-Requires **Android 8.0 or newer**. Tested on AYN Odin 2 Portal; other devices may vary.
-
-For future public updates, install the newer APK over the existing public release to retain the imported game and settings. Private Debug APKs use a separate signing key and cannot be upgraded directly to the public release.
-
-## Credits
-
-- **Original game:** [the skullkid](https://www.newgrounds.com/portal/view/63747), by [korded (Chance Banning)](https://korded.newgrounds.com/), 2002.
-- **Android adaptation and integration:** Frostie77.
+- **Original game:** [korded (Chance Banning)](https://korded.newgrounds.com/) — [the skullkid on Newgrounds](https://www.newgrounds.com/portal/view/63747), 2002.
+- **Android port:** Frostie77.
+- **Flash compatibility:** [Ruffle](https://ruffle.rs/).
 - **Settings interface:** [FrostFrontend](https://github.com/Frostie77/FrostFrontend).
-- **Flash compatibility:** [Ruffle](https://ruffle.rs/) and its contributors.
 
-This is an unofficial project, unaffiliated with the original creator, Newgrounds or Ruffle. Original game artwork, audio and other assets remain the property of their respective rights holders.
+This is an unofficial Android port. Original game artwork, audio and other assets belong to their respective owners.
