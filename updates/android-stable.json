@@ -2,5 +2,16 @@
   "schema_version": 1,
   "channel": "stable",
   "package": "io.github.frostie77.skullkid",
-  "latest": null
+  "latest": {
+    "package": "io.github.frostie77.skullkid",
+    "version_name": "1.0.0",
+    "version_code": 2,
+    "release_tag": "v1.0.0",
+    "source_commit": "c09f95e2e1df9580aef1a12a33667c0e7f734fca",
+    "certificate_sha256": "b3a7ff33107d45c8a76b77aef92ab46fc5abcb852ccdc4b208035ba4b1e78472",
+    "min_sdk": 26,
+    "apk_asset": "Skull-Kid-v1.0.0-Android.apk",
+    "apk_size": 30245412,
+    "apk_sha256": "f0c78adf42fef15ac07026822bd8c6c0bfb1ccf76461234361e015c080d2879d"
+  }
 }
