@@ -103,6 +103,15 @@ jobs:
     steps:
       - name: Check out release helper
         uses: actions/checkout@v4
+      - name: Verify approved icon files on Windows
+        shell: powershell
+        run: |
+          $icons = Get-Content -Raw 'approved-icon.sha256.json' | ConvertFrom-Json
+          foreach ($entry in $icons.PSObject.Properties) {
+            $actual = (Get-FileHash -LiteralPath $entry.Name -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actual -ne $entry.Value) { throw "Approved icon differs: $($entry.Name)" }
+          }
+          Write-Host 'PASS: approved icon bytes match on Windows.'
       - name: Parse release helper with Windows PowerShell 5.1
         shell: powershell
         run: |
