@@ -62,8 +62,6 @@ public final class MainActivity extends Activity {
     private final FrostSpeakerTest speakerTest = new FrostSpeakerTest();
     private Button menuButton;
     private SkullKidTouchControls touchControls;
-    private static final String[] QUALITY_LABELS = {"Low", "Medium", "High"};
-    private static final String[] QUALITY_VALUES = {"low", "medium", "high"};
     private boolean showingButtonMap;
     private boolean showingMovementSettings;
     private boolean updateChecking, updateCheckedThisLaunch, updateNoticeShown;
@@ -183,16 +181,24 @@ public final class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .addPathHandler("/game/", path -> {
                 if (!SWF_NAME.equals(path.startsWith("/") ? path.substring(1) : path)) return null;
-                try { return new WebResourceResponse("application/x-shockwave-flash", null,
-                    new FileInputStream(gameFile())); }
-                catch (IOException e) { return null; }
+                try {
+                    // The original imported SWF is never modified or redistributed.
+                    // Add the native Y/Flash quality listener only to in-memory bytes.
+                    byte[] original = java.nio.file.Files.readAllBytes(gameFile().toPath());
+                    byte[] playable = SkullKidQualityPatch.inject(original);
+                    return new WebResourceResponse("application/x-shockwave-flash", null,
+                        new java.io.ByteArrayInputStream(playable));
+                } catch (IOException e) {
+                    Log.w("SkullKidRuffle", "Quality input hook unavailable; loading original SWF", e);
+                    try { return new WebResourceResponse("application/x-shockwave-flash", null,
+                        new FileInputStream(gameFile())); }
+                    catch (IOException missing) { return null; }
+                }
             }).build();
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 applyDisplayMode();
-                // A quality change made inside FrostFrontend reloads the page;
-                // keep the new Flash movie paused while settings are still open.
                 if (frontend != null && frontend.isOpen()) {
                     view.evaluateJavascript(
                         "window.skullSetMenuPaused && window.skullSetMenuPaused(true)", null);
@@ -217,28 +223,8 @@ public final class MainActivity extends Activity {
         });
         root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
         addFrontend();
-        loadGamePage();
+        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
         webView.requestFocus();
-    }
-
-    /** Quality is set when Ruffle loads the SWF. Changing it restarts the movie.
-     * The imported game and all user preferences remain untouched. */
-    private void loadGamePage() {
-        if (webView == null) return;
-        int i = Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)));
-        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html?quality=" +
-            QUALITY_VALUES[i]);
-    }
-
-    private void cycleQuality(int direction) {
-        int current = Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)));
-        int next = (current + direction + 3) % 3;
-        preferences.edit().putInt("quality_mode", next).apply();
-        releaseGameInputs();
-        loadGamePage();
-        android.widget.Toast.makeText(this,
-            "Quality: " + QUALITY_LABELS[next] + " (game restarted)",
-            android.widget.Toast.LENGTH_SHORT).show();
     }
 
     private void jsKey(String key, boolean down, String source) {
@@ -331,15 +317,10 @@ public final class MainActivity extends Activity {
             @Override public List<FrostFrontendView.Item> itemsForTab(String tabId) {
                 switch (tabId) {
                     case "graphics":
-                        return Arrays.asList(
-                            item("display", "Display Mode",
-                                "stretch".equals(preferences.getString("display_mode", "original"))
-                                    ? "Stretch to Screen" : "Original (550×400)",
-                                "Original keeps correct proportions; Stretch fills the display"),
-                            item("quality", "Rendering Quality",
-                                QUALITY_LABELS[Math.max(0, Math.min(2, preferences.getInt("quality_mode", 2)))],
-                                "Low / Medium / High; cycle with Y. Changes restart Flash")
-                        );
+                        return Collections.singletonList(item("display", "Display Mode",
+                            "stretch".equals(preferences.getString("display_mode", "original"))
+                                ? "Stretch to Screen" : "Original (550×400)",
+                            "Original keeps correct proportions; Stretch fills the display"));
                     case "sound":
                         return Collections.singletonList(item("speaker_test",
                             "Speaker Test: Left → Right → Both", "",
@@ -427,8 +408,7 @@ public final class MainActivity extends Activity {
             }
 
             @Override public void onItemAdjusted(String tabId, String itemId, int direction) {
-                if (itemId.equals("display") || itemId.equals("quality") ||
-                    itemId.equals("automatic") ||
+                if (itemId.equals("display") || itemId.equals("automatic") ||
                     itemId.equals("directions") ||
                     itemId.equals("deadzone") || itemId.startsWith("invert_") ||
                     itemId.startsWith("touch_") && !itemId.equals("touch_reset"))
@@ -460,10 +440,6 @@ public final class MainActivity extends Activity {
             if (speakerTest.start())
                 android.widget.Toast.makeText(this, "LEFT, then RIGHT, then BOTH",
                     android.widget.Toast.LENGTH_LONG).show();
-            return;
-        }
-        if ("quality".equals(id)) {
-            cycleQuality(direction);
             return;
         }
         if ("display".equals(id)) {
@@ -659,13 +635,9 @@ public final class MainActivity extends Activity {
             } else {
                 if (!pressedGamepadButtons.remove(code)) return true;
             }
-            if ("quality".equals(key)) {
-                // A held button must never cycle repeatedly or restart the game again.
-                if (event.getAction() == KeyEvent.ACTION_DOWN &&
-                    event.getRepeatCount() == 0) cycleQuality(1);
-            } else {
-                jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
-            }
+            // Y sends a real Flash KeyY to the in-memory quality listener.
+            // The SWF updates its own _quality property without restarting.
+            jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
             return true;
         }
         return super.dispatchKeyEvent(event);

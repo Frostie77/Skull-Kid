@@ -16,13 +16,11 @@ ruffle-player { width:100%; height:100%; }
 <div id="stage"><div id="game"></div></div>
 <div id="status">Starting Skull Kid…</div>
 <script>
-const qualityParam = new URLSearchParams(location.search).get('quality');
-const renderQuality = ['low', 'medium', 'high'].includes(qualityParam) ? qualityParam : 'high';
 window.RufflePlayer = window.RufflePlayer || {};
 window.RufflePlayer.config = {
   autoplay: 'on', unmuteOverlay: 'visible', letterbox: 'on', contextMenu: 'off',
   allowScriptAccess: true, allowNetworking: 'all', publicPath: 'ruffle/',
-  quality: renderQuality
+  quality: 'high'
 };
 let player;
 let skullMenuPaused = false, skullBackgroundPaused = false, skullRufflePaused = false;
@@ -74,7 +72,8 @@ const keys = {
   down:{key:'ArrowDown',code:'ArrowDown',keyCode:40},
   left:{key:'ArrowLeft',code:'ArrowLeft',keyCode:37},
   right:{key:'ArrowRight',code:'ArrowRight',keyCode:39},
-  attack:{key:' ',code:'Space',keyCode:32}
+  attack:{key:' ',code:'Space',keyCode:32},
+  quality:{key:'y',code:'KeyY',keyCode:89}
 };
 const sources = Object.create(null);
 window.skullKey = (id, pressed, source) => {
@@ -112,7 +111,7 @@ window.addEventListener('load', async () => {
     document.getElementById('game').appendChild(player);
     await player.ruffle().load({
       url:'/game/skull-kid.swf', allowNetworking:'all',
-      allowScriptAccess:true, quality:renderQuality
+      allowScriptAccess:true, quality:'high'
     });
     status.remove();
     window.skullSetDisplayMode(skullDisplayMode);

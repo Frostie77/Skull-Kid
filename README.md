@@ -22,11 +22,11 @@ The supplied `Skull_Kid.swf` is a **Flash 6** movie with a **550 × 400** stage 
 
 - Left stick / D-pad: **arrow keys** to move, and duck/stand during the gunfight
 - **A**: **Space** to chainsaw/shoot
-- **Y**: cycle **Low → Medium → High** rendering quality (restarts the Flash movie at the title screen)
+- **Y**: cycle **Low → Medium → High** through the game's own Flash `_quality` setting, without restarting
 - **Start**: FrostFrontend menu
 - Touchscreen: joystick/D-pad and a single **USE** action
 
-FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch and Low/Medium/High rendering quality; Controls supports remapping the USE and quality-cycle buttons. The game must restart to apply a changed rendering quality; the imported SWF and settings are preserved. Movement settings, touch layout and stereo speaker testing remain available.
+FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch; Controls supports remapping the USE and quality-cycle buttons. Y changes the Flash movie's own `_quality` property live, rather than reloading the movie. A small AVM1 input listener is inserted **in memory while serving the user's imported SWF**; the SWF saved in app-private storage is never modified or published. Movement settings, touch layout and stereo speaker testing remain available.
 
 The stable update-feed file is deliberately empty until a signed APK has been properly released. Debug builds do not offer verified public updates.
 
