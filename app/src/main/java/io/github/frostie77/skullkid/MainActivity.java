@@ -660,7 +660,9 @@ public final class MainActivity extends Activity {
                 if (!pressedGamepadButtons.remove(code)) return true;
             }
             if ("quality".equals(key)) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) cycleQuality(1);
+                // A held button must never cycle repeatedly or restart the game again.
+                if (event.getAction() == KeyEvent.ACTION_DOWN &&
+                    event.getRepeatCount() == 0) cycleQuality(1);
             } else {
                 jsKey(key, event.getAction() == KeyEvent.ACTION_DOWN, "button" + code);
             }
