@@ -61,7 +61,10 @@ public final class MainActivity extends Activity {
     private FrostButtonMapper mapper;
     private final FrostSpeakerTest speakerTest = new FrostSpeakerTest();
     private Button menuButton;
+    private Button touchVisibilityButton;
     private SkullKidTouchControls touchControls;
+    // Temporary menu access: hide virtual controls without changing saved preferences.
+    private boolean touchOverlayHidden;
     private boolean showingButtonMap;
     private boolean showingMovementSettings;
     private boolean updateChecking, updateCheckedThisLaunch, updateNoticeShown;
@@ -277,6 +280,25 @@ public final class MainActivity extends Activity {
         params.topMargin = dp(10);
         params.rightMargin = dp(12);
         root.addView(menuButton, params);
+
+        // Skull Kid's Flash menu options can sit underneath the virtual D-pad.
+        // Offer a one-tap override without requiring a trip through FrostFrontend.
+        touchVisibilityButton = new Button(this);
+        touchVisibilityButton.setAllCaps(false);
+        touchVisibilityButton.setTextSize(12);
+        touchVisibilityButton.setTextColor(Color.WHITE);
+        touchVisibilityButton.setPadding(0, 0, 0, 0);
+        touchVisibilityButton.setBackgroundTintList(
+            android.content.res.ColorStateList.valueOf(0xAA28212B));
+        FrameLayout.LayoutParams touchToggleParams = new FrameLayout.LayoutParams(
+            dp(82), dp(40), Gravity.TOP | Gravity.LEFT);
+        touchToggleParams.topMargin = dp(10);
+        touchToggleParams.leftMargin = dp(12);
+        root.addView(touchVisibilityButton, touchToggleParams);
+        touchVisibilityButton.setOnClickListener(v -> {
+            touchOverlayHidden = !touchOverlayHidden;
+            updateTouchControls();
+        });
 
         frontend = new FrostFrontendView(this);
         frontend.setVisibility(View.GONE);
@@ -591,10 +613,17 @@ public final class MainActivity extends Activity {
     private void updateTouchControls() {
         if (touchControls == null) return;
         int mode = preferences.getInt("touch_mode", 0);
-        boolean show = webView != null && (frontend == null || !frontend.isOpen()) &&
+        boolean available = webView != null && (frontend == null || !frontend.isOpen()) &&
             (mode == 1 || mode == 0 && lastInputWasTouch);
+        boolean show = available && !touchOverlayHidden;
         if (!show) touchControls.releaseAll();
         touchControls.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (touchVisibilityButton != null) {
+            touchVisibilityButton.setVisibility(available ? View.VISIBLE : View.GONE);
+            touchVisibilityButton.setText(touchOverlayHidden ? "Show Pad" : "Hide Pad");
+            touchVisibilityButton.setContentDescription(touchOverlayHidden
+                ? "Show on-screen controls" : "Hide on-screen controls");
+        }
         touchControls.configure(preferences.getInt("touch_size", 1),
             preferences.getInt("touch_opacity", 1),
             preferences.getInt("touch_pad", 0),
