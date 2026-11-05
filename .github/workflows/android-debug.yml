@@ -24,8 +24,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK tools
-        uses: android-actions/setup-android@v3
+      - name: Use runner preinstalled Android SDK
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$SDK_ROOT" && test -d "$SDK_ROOT"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          test -x "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
 
       - name: Install Android 35 platform
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
