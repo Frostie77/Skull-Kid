@@ -111,7 +111,16 @@ function Confirm-Apk($file) {
     if ($text -notmatch ("package: name='" + [regex]::Escape($package) + "' versionCode='" + $versionCode + "' versionName='" + [regex]::Escape($releaseVersion) + "'")) { throw 'Compiled package identity or version is incorrect.' }
     if ($text -match '(?m)^application-debuggable') { throw 'Public APK is debuggable.' }
     if ($text -notmatch "(?m)^sdkVersion:'26'" -or $text -notmatch "(?m)^targetSdkVersion:'35'") { throw 'Compiled Android SDK requirements are incorrect.' }
-    if ($text -notmatch "(?m)^application.*icon='[^']*/ic_launcher\.(?:xml|png|webp)'") { throw 'Compiled approved launcher icon is missing.' }
+    # Release packaging can shorten resource file paths. Verify the named
+    # resource and the actual selected ZIP entry instead of its filename.
+    $resources = @(& $aapt dump resources $file)
+    if ($LASTEXITCODE -ne 0 -or ($resources -join "`n") -notmatch [regex]::Escape($package + ':mipmap/ic_launcher')) {
+        throw 'Compiled approved launcher resource is missing.'
+    }
+    $selectedIcon = [regex]::Match($text, "(?m)^application:.*icon='([^']+)'")
+    if (-not $selectedIcon.Success -or $selectedIcon.Groups[1].Value -notin $names) {
+        throw 'Selected launcher icon is missing from the APK.'
+    }
 }
 Confirm-Apk $unsigned
 & $zipalign -P 16 -f 4 $unsigned $aligned
