@@ -2,7 +2,7 @@
 
 Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status: initial debug source prepared; not yet built or tested on Android. There is no signed public release.**
+**Status: initial Debug APK built and installed successfully on AYN Odin 2 Portal. Gameplay and virtual controls work; quality cycling and final boss ending still require device verification. No signed public release.**
 
 The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
 
@@ -22,12 +22,17 @@ The supplied `Skull_Kid.swf` is a **Flash 6** movie with a **550 × 400** stage 
 
 - Left stick / D-pad: **arrow keys** to move, and duck/stand during the gunfight
 - **A**: **Space** to chainsaw/shoot
+- **Y**: cycle **Low → Medium → High** rendering quality (restarts the Flash movie at the title screen)
 - **Start**: FrostFrontend menu
 - Touchscreen: joystick/D-pad and a single **USE** action
 
-FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Display supports original 550×400 proportions or stretch; controls include button remapping and movement settings, plus touch layout adjustment and stereo speaker testing.
+FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch and Low/Medium/High rendering quality; Controls supports remapping the USE and quality-cycle buttons. The game must restart to apply a changed rendering quality; the imported SWF and settings are preserved. Movement settings, touch layout and stereo speaker testing remain available.
 
 The stable update-feed file is deliberately empty until a signed APK has been properly released. Debug builds do not offer verified public updates.
+
+## Known gameplay issue
+
+The final boss death sequence has been reported to stall before the victory ending. The supplied original SWF contains boss collision and timeline actions; the underlying cause is not yet confirmed. Do not call this fixed until the full final animation and victory screen have been tested on the Odin.
 
 ## Launcher icon
 
