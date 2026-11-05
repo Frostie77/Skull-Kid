@@ -52,6 +52,7 @@ final class SkullKidBossDiagnostics {
             if(len<0||len>end-data)throw new IOException("Bad SWF tag size");
             if(type==12 && lenAt>=0) {
                 String marker=null;
+                if(sprite==0 && frame==1)marker="ROOT_1_START";
                 if(sprite==0 && frame==11)marker="ROOT_11_GAMEPLAY";
                 if(sprite==0 && frame==12)marker="ROOT_12_CHECK";
                 if(sprite==0 && frame==13)marker="ROOT_13_VICTORY";
@@ -95,7 +96,7 @@ final class SkullKidBossDiagnostics {
         int start=8+(5+4*bits+7)/8+4;
         List<Mark> marks=new ArrayList<>();
         parseTags(raw,start,raw.length,0,-1,marks);
-        if(marks.size()!=6)return input; // Unknown game variants remain unchanged.
+        if(marks.size()!=7)return input; // Unknown game variants remain unchanged.
         marks.sort(Comparator.comparingInt((Mark m)->m.offset).reversed());
         for(Mark mark:marks) {
             byte[] marker=trace("SKULLDBG_"+mark.label);
