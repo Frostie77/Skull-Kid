@@ -182,9 +182,7 @@ public final class MainActivity extends Activity {
                 if (!SWF_NAME.equals(path.startsWith("/") ? path.substring(1) : path)) return null;
                 try {
                     byte[] original = java.nio.file.Files.readAllBytes(gameFile().toPath());
-                    byte[] playable = SkullKidBossEndingPatch.patch(original);
-                    if (playable != original)
-                        Log.i("SkullKidRuffle", "Boss-ending handoff patch applied in memory.");
+                    byte[] playable = original;
                     if ((getApplicationInfo().flags &
                             android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
                         byte[] instrumented = SkullKidBossDiagnostics.inject(playable);
@@ -195,7 +193,7 @@ public final class MainActivity extends Activity {
                     return new WebResourceResponse("application/x-shockwave-flash", null,
                         new java.io.ByteArrayInputStream(playable));
                 } catch (IOException e) {
-                    Log.w("SkullKidRuffle", "Boss patch unavailable; using original SWF", e);
+                    Log.w("SkullKidRuffle", "Boss diagnostics unavailable; using original SWF", e);
                     try { return new WebResourceResponse("application/x-shockwave-flash", null,
                         new FileInputStream(gameFile())); }
                     catch (IOException missing) { return null; }

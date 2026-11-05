@@ -53,17 +53,24 @@ final class SkullKidBossDiagnostics {
             if(type==12 && lenAt>=0) {
                 String marker=null;
                 if(sprite==0 && frame==1)marker="ROOT_1_START";
-                if(sprite==0 && frame==11)marker="ROOT_11_GAMEPLAY";
-                if(sprite==0 && frame==12)marker="ROOT_12_CHECK";
-                if(sprite==0 && frame==13)marker="ROOT_13_VICTORY";
+                if(sprite==0 && frame==7)marker="ROOT_7_BOSS";
+                if(sprite==0 && frame==9)marker="ROOT_9_VICTORY";
+                if(sprite==0 && frame==11)marker="ROOT_11_GUNFLOOR";
+                if(sprite==0 && frame==12)marker="ROOT_12_GUNFLOOR_CHECK";
+                if(sprite==0 && frame==13)marker="ROOT_13_BOSS_INTRO";
+                if(sprite==505 && frame==7)marker="BOSS_7_HURT";
+                if(sprite==505 && frame==29)marker="BOSS_29_SAWED2";
+                if(sprite==505 && frame==36)marker="BOSS_36_DEAD";
                 if(sprite==505 && frame==46)marker="BOSS_46_GORE_START";
                 if(sprite==505 && frame==50)marker="BOSS_50_STOP";
                 if(sprite==459 && frame==60)marker="GORE_60_HANDOFF";
+                if(sprite==566 && frame==40)marker="CUT_40_DONE";
+                if(sprite==566 && frame==43)marker="CUT_43_DEATH";
                 if(marker!=null)marks.add(new Mark(data,lenAt,spriteLenAt,marker));
             }
             if(type==39 && sprite==0 && len>=4) {
                 int id=u16(b,data);
-                if(id==459||id==505) {
+                if(id==459||id==505||id==566) {
                     if(lenAt<0)throw new IOException("Unexpected short sprite tag");
                     parseTags(b,data+4,data+len,id,lenAt,marks);
                 }
@@ -96,7 +103,7 @@ final class SkullKidBossDiagnostics {
         int start=8+(5+4*bits+7)/8+4;
         List<Mark> marks=new ArrayList<>();
         parseTags(raw,start,raw.length,0,-1,marks);
-        if(marks.size()!=7)return input; // Unknown game variants remain unchanged.
+        if(marks.size()!=14)return input; // Unknown game variants remain unchanged.
         marks.sort(Comparator.comparingInt((Mark m)->m.offset).reversed());
         for(Mark mark:marks) {
             byte[] marker=trace("SKULLDBG_"+mark.label);

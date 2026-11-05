@@ -75,30 +75,54 @@ const keys = {
   attack:{key:' ',code:'Space',keyCode:32}
 };
 const sources = Object.create(null);
+const keyRepeats = Object.create(null);
+function sendSkullKey(id, pressed, repeat = false) {
+  const spec = keys[id];
+  player.dispatchEvent(new KeyboardEvent(pressed ? 'keydown' : 'keyup', {
+    key:spec.key, code:spec.code, keyCode:spec.keyCode, which:spec.keyCode,
+    bubbles:true, composed:true, cancelable:true, repeat:repeat
+  }));
+}
+function stopKeyRepeat(id) {
+  const timer = keyRepeats[id];
+  if (!timer) return;
+  clearTimeout(timer.delay);
+  clearInterval(timer.interval);
+  delete keyRepeats[id];
+}
+function startKeyRepeat(id) {
+  stopKeyRepeat(id);
+  const timer = keyRepeats[id] = {};
+  // The original game's keyDown handlers rely on keyboard auto-repeat to
+  // change movement at collisions and continue the two-stage boss attack.
+  timer.delay = setTimeout(() => {
+    timer.interval = setInterval(() => {
+      if (!player || skullMenuPaused || skullBackgroundPaused || !sources[id]?.size) {
+        stopKeyRepeat(id);
+        return;
+      }
+      sendSkullKey(id, true, true);
+    }, 65);
+  }, 400);
+}
 window.skullKey = (id, pressed, source) => {
   if (pressed && (skullMenuPaused || skullBackgroundPaused)) return;
-  const spec = keys[id];
-  if (!spec || !player) return;
+  if (!keys[id] || !player) return;
   if (!sources[id]) sources[id] = new Set();
   const wasDown = sources[id].size > 0;
   if (pressed) sources[id].add(source); else sources[id].delete(source);
   const nowDown = sources[id].size > 0;
   if (wasDown === nowDown) return;
   player.focus();
-  player.dispatchEvent(new KeyboardEvent(nowDown ? 'keydown' : 'keyup', {
-    key:spec.key, code:spec.code, keyCode:spec.keyCode, which:spec.keyCode,
-    bubbles:true, composed:true, cancelable:true
-  }));
+  sendSkullKey(id, nowDown);
+  if (nowDown) startKeyRepeat(id); else stopKeyRepeat(id);
 };
 window.skullClearKeys = () => {
   for (const [id, holders] of Object.entries(sources)) {
-    if (!holders.size || !player) continue;
-    const spec = keys[id];
+    stopKeyRepeat(id);
+    if (!holders.size) continue;
     holders.clear();
-    player.dispatchEvent(new KeyboardEvent('keyup', {
-      key: spec.key, code: spec.code, keyCode: spec.keyCode, which: spec.keyCode,
-      bubbles: true, composed: true, cancelable: true
-    }));
+    if (player) sendSkullKey(id, false);
   }
 };
 window.addEventListener('load', async () => {

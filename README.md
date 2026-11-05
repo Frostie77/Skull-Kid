@@ -2,7 +2,7 @@
 
 Unofficial Android compatibility port of **[the skullkid](https://www.newgrounds.com/portal/view/63747)** (2002), originally created by **korded (Chance Banning)**. Uses [Ruffle](https://ruffle.rs) and the shared [FrostFrontend](https://github.com/Frostie77/FrostFrontend) Android settings library.
 
-**Status: initial Debug APK built and installed successfully on AYN Odin 2 Portal. Gameplay and virtual controls work; the final boss ending remains unresolved and needs an unmodified-SWF device test. No signed public release.**
+**Status: Debug APK builds and installs on AYN Odin 2 Portal. Held-key input now repeats like the original keyboard controls. The boss death animation and victory screen pass a local Ruffle 0.7.1 test; Odin verification remains pending. No signed public release.**
 
 The original Flash game **is not included** in the source or APK. Supply your own legally obtained `.swf` file at first launch.
 
@@ -25,13 +25,13 @@ The supplied `Skull_Kid.swf` is a **Flash 6** movie with a **550 × 400** stage 
 - **Start**: FrostFrontend menu
 - Touchscreen: joystick/D-pad and a single **USE** action
 
-FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch; Controls supports remapping the USE action. Rendering quality uses Ruffle's default High setting; there is no quality shortcut. Movement settings, touch layout and stereo speaker testing remain available. The original SWF is always served unchanged from app-private storage.
+FrostFrontend contains **Graphics, Sound, Controls, Touch Settings, Updates**. Graphics offers original 550×400 proportions or stretch; Controls supports remapping the USE action. Rendering quality uses Ruffle's default High setting; there is no quality shortcut. Movement settings, touch layout and stereo speaker testing remain available. Release builds serve the imported SWF unchanged. Debug builds add temporary timeline traces in memory.
 
 The stable update-feed file is deliberately empty until a signed APK has been properly released. Debug builds do not offer verified public updates.
 
-## Known gameplay issue
+## Boss ending verification
 
-The final boss death sequence has been reported to stall before the victory ending. The supplied original SWF contains boss collision and timeline actions; the underlying cause is not yet confirmed. Do not call this fixed until the full final animation and victory screen have been tested on the Odin.
+Held controller and touch keys now generate keyboard repeat events, as required by the original Flash keyDown handlers. A local Ruffle 0.7.1 comparison reproduces the stalled first injury with the old input bridge and reaches the full death animation and victory screen with the new bridge. Odin verification remains pending.
 
 ## Launcher icon
 
